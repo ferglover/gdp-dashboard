@@ -124,3 +124,4 @@ with right:
         f'Cada +1 pp adicional de penetración agrega aproximadamente {fmt_int(arrivals / 100)} Q\'s, '
         f'{fmt_int((arrivals / 100) * (closing / 100))} contratos y {fmt_money(one_pp_volume)} de volumen, manteniendo constantes el closing y el precio promedio.'
     )
+
