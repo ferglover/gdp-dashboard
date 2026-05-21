@@ -42,7 +42,14 @@ df = load_data()
 # =====================================
 
 st.title("Calculadora BI")
+#LEYENDA DE FECHA
+from datetime import datetime, timedelta
 
+yesterday = datetime.now() - timedelta(days=1)
+
+st.caption(
+    f"Datos hasta el {yesterday.strftime('%B %d, %Y')}"
+)
 # =====================================
 # SALESROOM FILTER
 # =====================================
