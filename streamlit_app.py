@@ -95,10 +95,10 @@ step=1
 
 with col3:
     avg_price = st.number_input(
-    "Average Price",
+    "Average Price ($)",
     value=float(row["Average Price"]),
     step=100.0,
-    format="$%.0f"
+    format="%0.0f"
 )
 
 
