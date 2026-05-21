@@ -76,14 +76,14 @@ col1, col2, col3 = st.columns(3)
 with col1:
     arrivals = st.number_input(
         "Arrivals",
-        value=float(row["Arrivals"]),
+        value=int(row["Arrivals"]),
         step=1.0
     )
 
 with col2:
     contracts = st.number_input(
         "Contracts Processable",
-        value=float(row["Contracts Processable"]),
+        value=int(row["Contracts Processable"]),
         step=1.0
     )
 
