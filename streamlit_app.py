@@ -77,14 +77,14 @@ with col1:
     arrivals = st.number_input(
         "Arrivals",
         value=int(row["Arrivals"]),
-        step=1
+step=1
     )
 
 with col2:
     contracts = st.number_input(
         "Contracts Processable",
         value=int(row["Contracts Processable"]),
-        step=1
+step=1
     )
 
     closing_rate = st.number_input(
