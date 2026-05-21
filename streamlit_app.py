@@ -98,10 +98,8 @@ with col3:
     "Average Price ($)",
     value=int(row["Average Price"]),
     step=100,
-    format="%d"
+    format=",.0f"
 )
-
-st.caption(f"${avg_price:,.0f}")
 
 # =====================================
 # DERIVED CALCULATIONS
@@ -131,3 +129,72 @@ with k3:
 
 with k4:
     st.metric("Volume", f"${volume:,.0f}")
+
+#==============================================================================SEGUNDA SECCION=================================================
+
+from datetime import datetime
+import calendar
+
+# =====================================
+# FORECAST EOM
+# =====================================
+
+today = pd.Timestamp.today().normalize()
+
+# Si ya tienes una fecha en la leyenda, úsala aquí.
+# Si no, toma la fecha de ayer como referencia.
+legend_date = today - pd.Timedelta(days=1)
+
+days_elapsed = legend_date.day
+days_in_month = calendar.monthrange(legend_date.year, legend_date.month)[1]
+days_remaining = days_in_month - days_elapsed
+
+def project_mtd(value):
+    return (value / days_elapsed) * days_in_month if days_elapsed else 0
+
+# Proyecciones de volumen
+proj_arrivals = project_mtd(arrivals)
+proj_contracts = project_mtd(contracts)
+proj_qs = project_mtd(qs)
+proj_volume = project_mtd(volume)
+
+# KPIs derivados
+proj_penetration = (proj_qs / proj_arrivals * 100) if proj_arrivals else 0
+proj_closing_rate = (proj_contracts / proj_qs * 100) if proj_qs else 0
+proj_vpg = (proj_volume / proj_qs) if proj_qs else 0
+proj_avg_price = (proj_volume / proj_contracts) if proj_contracts else 0
+
+st.subheader("Projected KPIs to Month End")
+
+st.caption(
+    f"Projection based on {legend_date.strftime('%B %d, %Y')} | "
+    f"{days_elapsed} days elapsed | {days_remaining} days remaining"
+)
+
+p1, p2, p3, p4 = st.columns(4)
+
+with p1:
+    st.metric("Projected Arrivals", f"{proj_arrivals:,.0f}")
+
+with p2:
+    st.metric("Projected Qs", f"{proj_qs:,.0f}")
+
+with p3:
+    st.metric("Projected Contracts", f"{proj_contracts:,.0f}")
+
+with p4:
+    st.metric("Projected Volume", f"${proj_volume:,.0f}")
+
+p5, p6, p7, p8 = st.columns(4)
+
+with p5:
+    st.metric("Projected Penetration", f"{proj_penetration:.2f}%")
+
+with p6:
+    st.metric("Projected Closing Rate", f"{proj_closing_rate:.2f}%")
+
+with p7:
+    st.metric("Projected VPG", f"${proj_vpg:,.0f}")
+
+with p8:
+    st.metric("Projected Average Price", f"${proj_avg_price:,.0f}")
