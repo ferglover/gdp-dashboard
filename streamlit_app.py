@@ -70,7 +70,6 @@ def load_data():
 
 @st.cache_data
 def load_forecast():
-
     df = pd.read_csv(
         BASE_DIR / "data" / "FORECAST MAY.csv",
         header=None,
@@ -78,41 +77,26 @@ def load_forecast():
         encoding="latin1"
     )
 
-    df["SalesRoom"] = (
-        df["SalesRoom"]
-        .astype(str)
-        .str.strip()
-    )
+    df["SalesRoom"] = df["SalesRoom"].astype(str).str.strip()
+    df["Metric"] = df["Metric"].astype(str).str.strip()
+    df["Value"] = pd.to_numeric(df["Value"], errors="coerce")
 
-    df["Metric"] = (
-        df["Metric"]
-        .astype(str)
-        .str.strip()
-    )
+    # Normaliza nombres de KPI
+    def clean_metric(x):
+        x = str(x).strip()
 
-    df["Value"] = pd.to_numeric(
-        df["Value"],
-        errors="coerce"
-    )
+        if "Penetr" in x:
+            return "Penetration"
 
-    # Normaliza nombres
-    df["Metric"] = df["Metric"].replace({
-        "% Penetraci�n": "Penetration",
-        "% Penetraci?n": "Penetration",
-        "% Penetración": "Penetration",
-        "% PenetraciÃ³n": "Penetration",
-        "Q's": "Qs",
-        "Q´s": "Qs",
-        "Q’s": "Qs",
-        "Contracts": "Contracts",
-        "Average Price": "Average Price",
-        "Closing Rate": "Closing Rate",
-        "VPG": "VPG",
-        "Volume": "Volume",
-        "Arrivals": "Arrivals"
-    })
+        x = x.replace("Q’s", "Qs").replace("Q´s", "Qs").replace("Q's", "Qs")
+        x = x.replace("Contracts ", "Contracts").replace("Average Price ", "Average Price")
+        x = x.replace("Closing Rate ", "Closing Rate").replace("VPG ", "VPG")
+        x = x.replace("Volume ", "Volume").replace("Arrivals ", "Arrivals")
 
-    # Pivot
+        return x
+
+    df["Metric"] = df["Metric"].apply(clean_metric)
+
     df = df.pivot_table(
         index="SalesRoom",
         columns="Metric",
@@ -121,7 +105,6 @@ def load_forecast():
     ).reset_index()
 
     df.columns.name = None
-
     return df
 
 # =====================================
@@ -335,10 +318,7 @@ with p8:
 
 forecast_arrivals = float(forecast_row.get("Arrivals", 0))
 
-forecast_penetration = float(
-    forecast_row.get("Penetration", 0)
-)
-
+forecast_penetration = float(forecast_row.get("Penetration", 0))
 if forecast_penetration <= 1:
     forecast_penetration *= 100
 
