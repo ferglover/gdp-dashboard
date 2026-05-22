@@ -318,6 +318,8 @@ with p8:
 
 forecast_arrivals = float(forecast_row.get("Arrivals", 0))
 forecast_penetration = float(forecast_row.get("Penetration", 0))
+if forecast_penetration <= 1:
+    forecast_penetration = forecast_penetration * 100
 forecast_qs = float(forecast_row.get("Qs", 0))
 forecast_contracts = float(forecast_row.get("Contracts", 0))
 forecast_avg_price = float(forecast_row.get("Average Price", 0))
