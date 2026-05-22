@@ -83,7 +83,7 @@ def load_forecast():
     df["Value"] = pd.to_numeric(df["Value"], errors="coerce")
 
     df["Metric"] = df["Metric"].replace({
-        "% Penetraci?n": "Penetration",
+        "% Penetración": "Penetration",
         "% Penetración": "Penetration",
         "Q's": "Qs",
         "Q´s": "Qs",
