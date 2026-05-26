@@ -4,6 +4,16 @@ import calendar
 
 import streamlit as st
 import pandas as pd
+
+# =====================================
+# PAGE CONFIG
+# =====================================
+
+st.set_page_config(
+    page_title="KPI Calculator",
+    layout="wide"
+)
+
 # =====================================
 # SIMPLE LOGIN
 # =====================================
@@ -15,35 +25,26 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-
     st.title("Login")
 
     user = st.text_input("User")
     pwd = st.text_input("Password", type="password")
 
     if st.button("Login"):
-
         if user == USERNAME and pwd == PASSWORD:
             st.session_state.authenticated = True
             st.rerun()
-
         else:
             st.error("Invalid credentials")
 
     st.stop()
 
 # =====================================
-# PAGE CONFIG
+# STYLES
 # =====================================
-
-st.set_page_config(
-    page_title="KPI Calculator",
-    layout="wide"
-)
 
 st.markdown("""
 <style>
-
 /* INPUT EDITABLE */
 div[data-baseweb="input"] input {
     font-size: 36px !important;
@@ -63,12 +64,44 @@ label[data-testid="stWidgetLabel"] p {
     font-weight: 700 !important;
 }
 
+/* MATRIZ */
+.matrix-header {
+    font-size: 16px;
+    font-weight: 800;
+    padding: 8px 0 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 8px;
+}
+
+.matrix-kpi {
+    font-size: 16px;
+    font-weight: 700;
+    padding-top: 14px;
+}
+
+.matrix-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+    padding-top: 10px;
+}
+
+.matrix-card {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 14px 14px 12px 14px;
+    min-height: 110px;
+    background: rgba(255,255,255,0.02);
+}
 </style>
 """, unsafe_allow_html=True)
-#=====================================
+
+# =====================================
 # PATH
-#=====================================
+# =====================================
+
 BASE_DIR = Path(__file__).resolve().parent
+
 # =====================================
 # LOAD ACTUAL DATA
 # =====================================
@@ -88,8 +121,6 @@ def load_data():
 
 # =====================================
 # LOAD FORECAST DATA
-# Format expected:
-# SalesRoom, Metric, Value
 # =====================================
 
 @st.cache_data
@@ -105,7 +136,6 @@ def load_forecast():
     df["Metric"] = df["Metric"].astype(str).str.strip()
     df["Value"] = pd.to_numeric(df["Value"], errors="coerce")
 
-    # Normaliza nombres de KPI
     def clean_metric(x):
         x = str(x).strip()
 
@@ -131,10 +161,6 @@ def load_forecast():
     df.columns.name = None
     return df
 
-# =====================================
-# LOAD DATAFRAMES
-# =====================================
-
 df = load_data()
 forecast_df = load_forecast()
 
@@ -143,10 +169,6 @@ forecast_df = load_forecast()
 # =====================================
 
 st.title("Calculadora BI")
-
-# =====================================
-# DATE LEGEND
-# =====================================
 
 yesterday = datetime.now() - timedelta(days=1)
 st.caption(f"Data until {yesterday.strftime('%B %d, %Y')}")
@@ -175,108 +197,94 @@ row = filtered.iloc[0]
 forecast_row = forecast_filtered.iloc[0]
 
 # =====================================
-# ACTUALS KPIs
+# HELPERS
 # =====================================
 
-st.subheader("Actuals KPIs")
+def input_cell(title, value, step, fmt="%d"):
+    return st.number_input(
+        title,
+        value=value,
+        step=step,
+        format=fmt,
+        label_visibility="collapsed"
+    )
 
-def input_card(title, value, step, fmt="%d"):
+def value_cell(value):
+    st.markdown(
+        f"""
+        <div class="matrix-card">
+            <div class="matrix-value">{value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    with st.container(border=True):
+def kpi_label(text):
+    st.markdown(f"<div class='matrix-kpi'>{text}</div>", unsafe_allow_html=True)
 
-        st.markdown(f"**{title}**")
+def fmt_int(v):
+    return f"{v:,.0f}"
 
-        return st.number_input(
-            title,
-            value=value,
-            step=step,
-            format=fmt,
-            label_visibility="collapsed"
-        )
+def fmt_money(v):
+    return f"${v:,.0f}"
 
-c1, c2, c3, c4 = st.columns(4)
+def fmt_pct(v):
+    return f"{v:.2f}%"
+
+def fmt_pp(v):
+    return f"{v:+.2f} pp"
+
+# =====================================
+# ACTUAL INPUTS
+# =====================================
+
+arrivals = int(round(float(row["Arrivals"])))
+contracts = int(round(float(row["Contracts Processable"])))
+closing_rate = float(row["Closing Rate"]) * 100 if float(row["Closing Rate"]) <= 1 else float(row["Closing Rate"])
+avg_price = int(round(float(row["Average Price"])))
+
+c1, c2, c3, c4 = st.columns([1.6, 1, 1, 1, 1], gap="small")
 
 with c1:
-    arrivals = input_card(
-        "Arrivals",
-        int(round(float(row["Arrivals"]))),
-        step=1,
-        fmt="%d"
-    )
-
+    kpi_label("KPI")
 with c2:
-    contracts = input_card(
-        "Contracts Processable",
-        int(round(float(row["Contracts Processable"]))),
-        step=1,
-        fmt="%d"
-    )
-
+    st.markdown("<div class='matrix-header'>Actuals KPIs</div>", unsafe_allow_html=True)
 with c3:
-    closing_rate = input_card(
-        "Closing Rate %",
-        float(row["Closing Rate"]) * 100
-        if float(row["Closing Rate"]) <= 1
-        else float(row["Closing Rate"]),
-        step=0.1,
-        fmt="%.1f"
-    )
-
+    st.markdown("<div class='matrix-header'>Projected KPIs to Month End</div>", unsafe_allow_html=True)
 with c4:
-    avg_price = input_card(
-        "Average Price ($)",
-        int(round(float(row["Average Price"]))),
-        step=100,
-        fmt="%d"
-    )
+    st.markdown("<div class='matrix-header'>Forecast Targets</div>", unsafe_allow_html=True)
+with st.columns([1.6, 1, 1, 1, 1], gap="small")[4]:
+    st.markdown("<div class='matrix-header'>Projected vs Forecast</div>", unsafe_allow_html=True)
 
 # =====================================
-# DERIVED CALCULATIONS - ACTUALS
+# CALCULATIONS - ACTUALS
 # =====================================
 
 qs = contracts / (closing_rate / 100) if closing_rate else 0
-
-penetration = (
-    (qs / arrivals) * 100
-    if arrivals else 0
-)
-
+penetration = (qs / arrivals * 100) if arrivals else 0
 volume = contracts * avg_price
-
-vpg = (
-    volume / qs
-    if qs else 0
-)
+vpg = volume / qs if qs else 0
 
 # =====================================
-# CALCULATED KPIs
+# FORECAST TARGETS
 # =====================================
 
-m1, m2, m3, m4 = st.columns(4)
+forecast_arrivals = float(forecast_row.get("Arrivals", 0))
 
-with m1:
-    st.metric(
-        "Penetration",
-        f"{penetration:.2f}%"
-    )
+forecast_penetration = float(forecast_row.get("Penetration", 0))
+if forecast_penetration <= 1:
+    forecast_penetration *= 100
 
-with m2:
-    st.metric(
-        "Qs",
-        f"{qs:,.0f}"
-    )
+forecast_qs = float(forecast_row.get("Qs", 0))
+forecast_contracts = float(forecast_row.get("Contracts", 0))
+forecast_avg_price = float(forecast_row.get("Average Price", 0))
 
-with m3:
-    st.metric(
-        "VPG",
-        f"${vpg:,.0f}"
-    )
+forecast_closing_rate = float(forecast_row.get("Closing Rate", 0))
+if forecast_closing_rate <= 1:
+    forecast_closing_rate *= 100
 
-with m4:
-    st.metric(
-        "Volume",
-        f"${volume:,.0f}"
-    )
+forecast_vpg = float(forecast_row.get("VPG", 0))
+forecast_volume = float(forecast_row.get("Volume", 0))
 
 # =====================================
 # FORECAST EOM
@@ -302,181 +310,109 @@ proj_closing_rate = (proj_contracts / proj_qs * 100) if proj_qs else 0
 proj_vpg = (proj_volume / proj_qs) if proj_qs else 0
 proj_avg_price = (proj_volume / proj_contracts) if proj_contracts else 0
 
-st.subheader("Projected KPIs to Month End")
-st.caption(
-    f"Projection based on {legend_date.strftime('%B %d, %Y')} | "
-    f"{days_elapsed} days elapsed | {days_remaining} days remaining"
-)
-
-p1, p2, p3, p4 = st.columns(4)
-
-with p1:
-    st.metric("Projected Arrivals", f"{proj_arrivals:,.0f}")
-
-with p2:
-    st.metric("Projected Qs", f"{proj_qs:,.0f}")
-
-with p3:
-    st.metric("Projected Contracts", f"{proj_contracts:,.0f}")
-
-with p4:
-    st.metric("Projected Volume", f"${proj_volume:,.0f}")
-
-p5, p6, p7, p8 = st.columns(4)
-
-with p5:
-    st.metric("Projected Penetration", f"{proj_penetration:.2f}%")
-
-with p6:
-    st.metric("Projected Closing Rate", f"{proj_closing_rate:.2f}%")
-
-with p7:
-    st.metric("Projected VPG", f"${proj_vpg:,.0f}")
-
-with p8:
-    st.metric("Projected Average Price", f"${proj_avg_price:,.0f}")
-
 # =====================================
-# FORECAST TARGETS
-# =====================================
-
-forecast_arrivals = float(forecast_row.get("Arrivals", 0))
-
-forecast_penetration = float(forecast_row.get("Penetration", 0))
-if forecast_penetration <= 1:
-    forecast_penetration *= 100
-
-forecast_qs = float(
-    forecast_row.get("Qs", 0)
-)
-
-forecast_contracts = float(
-    forecast_row.get("Contracts", 0)
-)
-
-forecast_avg_price = float(
-    forecast_row.get("Average Price", 0)
-)
-
-forecast_closing_rate = float(
-    forecast_row.get("Closing Rate", 0)
-)
-
-if forecast_closing_rate <= 1:
-    forecast_closing_rate *= 100
-
-forecast_vpg = float(
-    forecast_row.get("VPG", 0)
-)
-
-forecast_volume = float(
-    forecast_row.get("Volume", 0)
-)
-
-st.subheader("Forecast Targets")
-
-f1, f2, f3, f4 = st.columns(4)
-
-with f1:
-    st.metric("Forecast Arrivals", f"{forecast_arrivals:,.0f}")
-
-with f2:
-    st.metric("Forecast Qs", f"{forecast_qs:,.0f}")
-
-with f3:
-    st.metric("Forecast Contracts", f"{forecast_contracts:,.0f}")
-
-with f4:
-    st.metric("Forecast Volume", f"${forecast_volume:,.0f}")
-
-f5, f6, f7, f8 = st.columns(4)
-
-with f5:
-    st.metric("Forecast Penetration", f"{forecast_penetration:.2f}%")
-
-with f6:
-    st.metric("Forecast Closing Rate", f"{forecast_closing_rate:.2f}%")
-
-with f7:
-    st.metric("Forecast VPG", f"${forecast_vpg:,.0f}")
-
-with f8:
-    st.metric("Forecast Average Price", f"${forecast_avg_price:,.0f}")
-
-# =====================================
-# VARIANCE VS FORECAST
+# VARIANCES
 # =====================================
 
 var_arrivals = proj_arrivals - forecast_arrivals
-var_qs = proj_qs - forecast_qs
 var_contracts = proj_contracts - forecast_contracts
+var_qs = proj_qs - forecast_qs
 var_volume = proj_volume - forecast_volume
-
 var_penetration_pp = proj_penetration - forecast_penetration
 var_closing_pp = proj_closing_rate - forecast_closing_rate
 var_vpg = proj_vpg - forecast_vpg
 var_avg_price = proj_avg_price - forecast_avg_price
 
-st.subheader("Projected vs Forecast")
+# =====================================
+# MATRIX
+# =====================================
 
-v1, v2, v3, v4 = st.columns(4)
+rows = [
+    ("Arrivals", arrivals, proj_arrivals, forecast_arrivals, var_arrivals, "int"),
+    ("Contracts Processable", contracts, proj_contracts, forecast_contracts, var_contracts, "int"),
+    ("Closing Rate", closing_rate, proj_closing_rate, forecast_closing_rate, var_closing_pp, "pct"),
+    ("Average Price", avg_price, proj_avg_price, forecast_avg_price, var_avg_price, "money"),
+    ("Qs", qs, proj_qs, forecast_qs, var_qs, "int"),
+    ("Penetration", penetration, proj_penetration, forecast_penetration, var_penetration_pp, "pct"),
+    ("VPG", vpg, proj_vpg, forecast_vpg, var_vpg, "money"),
+    ("Volume", volume, proj_volume, forecast_volume, var_volume, "money"),
+]
 
-with v1:
-    st.metric(
-        "Arrivals",
-        f"{proj_arrivals:,.0f}",
-        f"{var_arrivals:+,.0f}"
-    )
+st.markdown("### KPI Matrix")
+st.caption(
+    f"Projection based on {legend_date.strftime('%B %d, %Y')} | "
+    f"{days_elapsed} days elapsed | {days_remaining} days remaining"
+)
 
-with v2:
-    st.metric(
-        "Qs",
-        f"{proj_qs:,.0f}",
-        f"{var_qs:+,.0f}"
-    )
+for i, (label, actual_val, proj_val, fcst_val, var_val, kind) in enumerate(rows):
+    cols = st.columns([1.6, 1, 1, 1, 1], gap="small")
 
-with v3:
-    st.metric(
-        "Contracts",
-        f"{proj_contracts:,.0f}",
-        f"{var_contracts:+,.0f}"
-    )
+    with cols[0]:
+        kpi_label(label)
 
-with v4:
-    st.metric(
-        "Volume",
-        f"${proj_volume:,.0f}",
-        f"${var_volume:+,.0f}"
-    )
+    with cols[1]:
+        if label in ["Arrivals", "Contracts Processable", "Closing Rate", "Average Price"]:
+            if label == "Arrivals":
+                arrivals = input_cell("Arrivals", arrivals, step=1, fmt="%d")
+                actual_val = arrivals
+            elif label == "Contracts Processable":
+                contracts = input_cell("Contracts Processable", contracts, step=1, fmt="%d")
+                actual_val = contracts
+            elif label == "Closing Rate":
+                closing_rate = input_cell("Closing Rate", closing_rate, step=0.1, fmt="%.1f")
+                actual_val = closing_rate
+            elif label == "Average Price":
+                avg_price = input_cell("Average Price", avg_price, step=100, fmt="%d")
+                actual_val = avg_price
 
-v5, v6, v7, v8 = st.columns(4)
+            # Recalculate actuals/projections if inputs changed
+            qs = contracts / (closing_rate / 100) if closing_rate else 0
+            penetration = (qs / arrivals * 100) if arrivals else 0
+            volume = contracts * avg_price
+            vpg = volume / qs if qs else 0
 
-with v5:
-    st.metric(
-        "Penetration",
-        f"{proj_penetration:.2f}%",
-        f"{var_penetration_pp:+.2f} pp"
-    )
+            proj_arrivals = project_mtd(arrivals)
+            proj_contracts = project_mtd(contracts)
+            proj_qs = project_mtd(qs)
+            proj_volume = project_mtd(volume)
 
-with v6:
-    st.metric(
-        "Closing Rate",
-        f"{proj_closing_rate:.2f}%",
-        f"{var_closing_pp:+.2f} pp"
-    )
+            proj_penetration = (proj_qs / proj_arrivals * 100) if proj_arrivals else 0
+            proj_closing_rate = (proj_contracts / proj_qs * 100) if proj_qs else 0
+            proj_vpg = (proj_volume / proj_qs) if proj_qs else 0
+            proj_avg_price = (proj_volume / proj_contracts) if proj_contracts else 0
 
-with v7:
-    st.metric(
-        "VPG",
-        f"${proj_vpg:,.0f}",
-        f"${var_vpg:+,.0f}"
-    )
+            var_arrivals = proj_arrivals - forecast_arrivals
+            var_contracts = proj_contracts - forecast_contracts
+            var_qs = proj_qs - forecast_qs
+            var_volume = proj_volume - forecast_volume
+            var_penetration_pp = proj_penetration - forecast_penetration
+            var_closing_pp = proj_closing_rate - forecast_closing_rate
+            var_vpg = proj_vpg - forecast_vpg
+            var_avg_price = proj_avg_price - forecast_avg_price
 
-with v8:
-    st.metric(
-        "Average Price",
-        f"${proj_avg_price:,.0f}",
-        f"${var_avg_price:+,.0f}"
-    )
+        else:
+            value_cell(fmt_int(actual_val) if kind == "int" else fmt_money(actual_val) if kind == "money" else fmt_pct(actual_val))
 
-    #test
+    with cols[2]:
+        if kind == "int":
+            value_cell(fmt_int(proj_val))
+        elif kind == "money":
+            value_cell(fmt_money(proj_val))
+        else:
+            value_cell(fmt_pct(proj_val))
+
+    with cols[3]:
+        if kind == "int":
+            value_cell(fmt_int(fcst_val))
+        elif kind == "money":
+            value_cell(fmt_money(fcst_val))
+        else:
+            value_cell(fmt_pct(fcst_val))
+
+    with cols[4]:
+        if kind == "pct":
+            value_cell(fmt_pp(var_val))
+        elif kind == "money":
+            value_cell(fmt_money(var_val))
+        else:
+            value_cell(fmt_int(var_val))
