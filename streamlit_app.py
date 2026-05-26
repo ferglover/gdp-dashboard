@@ -243,18 +243,18 @@ contracts = int(round(float(row["Contracts Processable"])))
 closing_rate = float(row["Closing Rate"]) * 100 if float(row["Closing Rate"]) <= 1 else float(row["Closing Rate"])
 avg_price = int(round(float(row["Average Price"])))
 
-c1, c2, c3, c4 = st.columns([1.6, 1, 1, 1, 1], gap="small")
+cols = st.columns([1.6, 1, 1, 1, 1], gap="small")
 
-with c1:
-    kpi_label("KPI")
-with c2:
-    st.markdown("<div class='matrix-header'>Actuals KPIs</div>", unsafe_allow_html=True)
-with c3:
-    st.markdown("<div class='matrix-header'>Projected KPIs to Month End</div>", unsafe_allow_html=True)
-with c4:
-    st.markdown("<div class='matrix-header'>Forecast Targets</div>", unsafe_allow_html=True)
-with st.columns([1.6, 1, 1, 1, 1], gap="small")[4]:
-    st.markdown("<div class='matrix-header'>Projected vs Forecast</div>", unsafe_allow_html=True)
+with cols[0]:
+    ...
+with cols[1]:
+    ...
+with cols[2]:
+    ...
+with cols[3]:
+    ...
+with cols[4]:
+    ...
 
 # =====================================
 # CALCULATIONS - ACTUALS
