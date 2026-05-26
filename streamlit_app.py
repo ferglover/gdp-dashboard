@@ -2,8 +2,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import calendar
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 # =====================================
 # PAGE CONFIG
@@ -18,26 +18,6 @@ st.set_page_config(
 # SIMPLE LOGIN
 # =====================================
 
-USERNAME = "admin"
-PASSWORD = "uvc2026"
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-if not st.session_state.authenticated:
-    st.title("Login")
-
-    user = st.text_input("User")
-    pwd = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        if user == USERNAME and pwd == PASSWORD:
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.error("Invalid credentials")
-
-    st.stop()
 
 # =====================================
 # STYLES
@@ -45,54 +25,172 @@ if not st.session_state.authenticated:
 
 st.markdown("""
 <style>
-/* INPUT EDITABLE */
+
+/* =========================
+   GLOBAL CONTAINER
+========================= */
+
+.block-container {
+    padding-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+}
+
+/* =========================
+   INPUT EDITABLE
+========================= */
+
 div[data-baseweb="input"] input {
     font-size: 36px !important;
     font-weight: 400 !important;
 }
 
-/* BOTONES + / - */
+/* =========================
+   BOTONES + / -
+========================= */
+
 button[data-testid="stNumberInputStepUp"],
 button[data-testid="stNumberInputStepDown"] {
     height: 38px !important;
     width: 38px !important;
 }
 
-/* LABEL DEL INPUT */
+/* =========================
+   LABEL DEL INPUT
+========================= */
+
 label[data-testid="stWidgetLabel"] p {
     font-size: 18px !important;
     font-weight: 700 !important;
 }
 
-/* MATRIZ */
-.matrix-header {
-    font-size: 16px;
+/* =========================
+   MATRIX HEADERS
+========================= */
+
+.kpi-header {
+    font-size: 13px;
     font-weight: 800;
-    padding: 8px 0 12px 0;
+    padding: 8px 0 10px 0;
     border-bottom: 1px solid rgba(255,255,255,0.12);
     margin-bottom: 8px;
+    text-align: center;
 }
 
-.matrix-kpi {
-    font-size: 16px;
-    font-weight: 700;
-    padding-top: 14px;
-}
+/* =========================
+   KPI LABEL
+========================= */
 
-.matrix-value {
-    font-size: 28px;
+.kpi-label {
+    font-size: 14px;
     font-weight: 700;
+    padding-top: 12px;
     line-height: 1.15;
-    padding-top: 10px;
 }
 
-.matrix-card {
+/* =========================
+   KPI CARDS
+========================= */
+
+.kpi-value-card {
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px;
-    padding: 14px 14px 12px 14px;
-    min-height: 110px;
+    padding: 12px 12px 10px 12px;
+    min-height: 82px;
     background: rgba(255,255,255,0.02);
+    display: flex;
+    align-items: center;
 }
+
+/* =========================
+   KPI VALUES
+========================= */
+
+.kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    word-break: break-word;
+}
+
+/* =========================
+   SECTION TITLES
+========================= */
+
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    /* STACK COLUMNS */
+    div[data-testid="stHorizontalBlock"] {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    div[data-testid="column"] {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* HEADERS */
+    .kpi-header {
+        text-align: left !important;
+        font-size: 14px !important;
+        margin-bottom: 2px !important;
+        padding-bottom: 6px !important;
+    }
+
+    /* KPI LABELS */
+    .kpi-label {
+        padding-top: 2px !important;
+        margin-bottom: 2px !important;
+        font-size: 15px !important;
+    }
+
+    /* KPI CARDS */
+    .kpi-value-card {
+        min-height: 64px !important;
+        padding: 10px 10px 8px 10px !important;
+    }
+
+    /* KPI VALUES */
+    .kpi-value {
+        font-size: 18px !important;
+    }
+
+    /* INPUTS */
+    div[data-baseweb="input"] input {
+        font-size: 22px !important;
+    }
+
+    /* BUTTONS */
+    button[data-testid="stNumberInputStepUp"],
+    button[data-testid="stNumberInputStepDown"] {
+        height: 30px !important;
+        width: 30px !important;
+    }
+
+    /* LABELS */
+    label[data-testid="stWidgetLabel"] p {
+        font-size: 14px !important;
+    }
+
+    /* SECTION TITLES */
+    .section-title {
+        font-size: 18px !important;
+    }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -161,11 +259,15 @@ def load_forecast():
     df.columns.name = None
     return df
 
+# =====================================
+# LOAD DATAFRAMES
+# =====================================
+
 df = load_data()
 forecast_df = load_forecast()
 
 # =====================================
-# TITLE
+# TITLE / LEGEND
 # =====================================
 
 st.title("Calculadora BI")
@@ -200,27 +302,26 @@ forecast_row = forecast_filtered.iloc[0]
 # HELPERS
 # =====================================
 
-def input_cell(title, value, step, fmt="%d"):
-    return st.number_input(
-        title,
-        value=value,
-        step=step,
-        format=fmt,
-        label_visibility="collapsed"
-    )
+def input_card(title, value, step, fmt="%d"):
+    with st.container(border=True):
+        st.markdown(f"**{title}**")
+        return st.number_input(
+            title,
+            value=value,
+            step=step,
+            format=fmt,
+            label_visibility="collapsed"
+        )
 
-def value_cell(value):
+def value_card(value):
     st.markdown(
         f"""
-        <div class="matrix-card">
-            <div class="matrix-value">{value}</div>
+        <div class="kpi-value-card">
+            <div class="kpi-value">{value}</div>
         </div>
         """,
         unsafe_allow_html=True
     )
-
-def kpi_label(text):
-    st.markdown(f"<div class='matrix-kpi'>{text}</div>", unsafe_allow_html=True)
 
 def fmt_int(v):
     return f"{v:,.0f}"
@@ -234,57 +335,95 @@ def fmt_pct(v):
 def fmt_pp(v):
     return f"{v:+.2f} pp"
 
+def render_header(col_widths):
+    cols = st.columns(col_widths, gap="small")
+    cols[0].markdown("<div class='kpi-header'>KPI</div>", unsafe_allow_html=True)
+    cols[1].markdown("<div class='kpi-header'>Actuals KPIs</div>", unsafe_allow_html=True)
+    cols[2].markdown("<div class='kpi-header'>Projected KPIs to Month End</div>", unsafe_allow_html=True)
+    cols[3].markdown("<div class='kpi-header'>Forecast Targets</div>", unsafe_allow_html=True)
+    cols[4].markdown("<div class='kpi-header'>Projected vs Forecast</div>", unsafe_allow_html=True)
+
+def render_row(label, actual, projected, forecast, variance, kind, col_widths):
+    cols = st.columns(col_widths, gap="small")
+
+    cols[0].markdown(f"<div class='kpi-label'>{label}</div>", unsafe_allow_html=True)
+
+    with cols[1]:
+        value_card(
+            fmt_int(actual) if kind == "int"
+            else fmt_money(actual) if kind == "money"
+            else fmt_pct(actual)
+        )
+
+    with cols[2]:
+        value_card(
+            fmt_int(projected) if kind == "int"
+            else fmt_money(projected) if kind == "money"
+            else fmt_pct(projected)
+        )
+
+    with cols[3]:
+        value_card(
+            fmt_int(forecast) if kind == "int"
+            else fmt_money(forecast) if kind == "money"
+            else fmt_pct(forecast)
+        )
+
+    with cols[4]:
+        value_card(
+            fmt_int(variance) if kind == "int"
+            else fmt_money(variance) if kind == "money"
+            else fmt_pp(variance)
+        )
+
 # =====================================
 # ACTUAL INPUTS
 # =====================================
 
-arrivals = int(round(float(row["Arrivals"])))
-contracts = int(round(float(row["Contracts Processable"])))
-closing_rate = float(row["Closing Rate"]) * 100 if float(row["Closing Rate"]) <= 1 else float(row["Closing Rate"])
-avg_price = int(round(float(row["Average Price"])))
+st.markdown("<div class='section-title'>Actuals KPIs</div>", unsafe_allow_html=True)
 
-cols = st.columns([1.6, 1, 1, 1, 1], gap="small")
+i1, i2, i3, i4 = st.columns(4, gap="small")
 
-with cols[0]:
-    ...
-with cols[1]:
-    ...
-with cols[2]:
-    ...
-with cols[3]:
-    ...
-with cols[4]:
-    ...
+with i1:
+    arrivals = input_card(
+        "Arrivals",
+        int(round(float(row["Arrivals"]))),
+        step=1,
+        fmt="%d"
+    )
+
+with i2:
+    contracts = input_card(
+        "Contracts Processable",
+        int(round(float(row["Contracts Processable"]))),
+        step=1,
+        fmt="%d"
+    )
+
+with i3:
+    closing_rate = input_card(
+        "Closing Rate %",
+        float(row["Closing Rate"]) * 100 if float(row["Closing Rate"]) <= 1 else float(row["Closing Rate"]),
+        step=0.1,
+        fmt="%.1f"
+    )
+
+with i4:
+    avg_price = input_card(
+        "Average Price ($)",
+        int(round(float(row["Average Price"]))),
+        step=100,
+        fmt="%d"
+    )
 
 # =====================================
-# CALCULATIONS - ACTUALS
+# ACTUAL CALCULATIONS
 # =====================================
 
 qs = contracts / (closing_rate / 100) if closing_rate else 0
 penetration = (qs / arrivals * 100) if arrivals else 0
 volume = contracts * avg_price
 vpg = volume / qs if qs else 0
-
-# =====================================
-# FORECAST TARGETS
-# =====================================
-
-forecast_arrivals = float(forecast_row.get("Arrivals", 0))
-
-forecast_penetration = float(forecast_row.get("Penetration", 0))
-if forecast_penetration <= 1:
-    forecast_penetration *= 100
-
-forecast_qs = float(forecast_row.get("Qs", 0))
-forecast_contracts = float(forecast_row.get("Contracts", 0))
-forecast_avg_price = float(forecast_row.get("Average Price", 0))
-
-forecast_closing_rate = float(forecast_row.get("Closing Rate", 0))
-if forecast_closing_rate <= 1:
-    forecast_closing_rate *= 100
-
-forecast_vpg = float(forecast_row.get("VPG", 0))
-forecast_volume = float(forecast_row.get("Volume", 0))
 
 # =====================================
 # FORECAST EOM
@@ -311,6 +450,27 @@ proj_vpg = (proj_volume / proj_qs) if proj_qs else 0
 proj_avg_price = (proj_volume / proj_contracts) if proj_contracts else 0
 
 # =====================================
+# FORECAST TARGETS
+# =====================================
+
+forecast_arrivals = float(forecast_row.get("Arrivals", 0))
+
+forecast_penetration = float(forecast_row.get("Penetration", 0))
+if forecast_penetration <= 1:
+    forecast_penetration *= 100
+
+forecast_qs = float(forecast_row.get("Qs", 0))
+forecast_contracts = float(forecast_row.get("Contracts", 0))
+forecast_avg_price = float(forecast_row.get("Average Price", 0))
+
+forecast_closing_rate = float(forecast_row.get("Closing Rate", 0))
+if forecast_closing_rate <= 1:
+    forecast_closing_rate *= 100
+
+forecast_vpg = float(forecast_row.get("VPG", 0))
+forecast_volume = float(forecast_row.get("Volume", 0))
+
+# =====================================
 # VARIANCES
 # =====================================
 
@@ -327,92 +487,20 @@ var_avg_price = proj_avg_price - forecast_avg_price
 # MATRIX
 # =====================================
 
-rows = [
-    ("Arrivals", arrivals, proj_arrivals, forecast_arrivals, var_arrivals, "int"),
-    ("Contracts Processable", contracts, proj_contracts, forecast_contracts, var_contracts, "int"),
-    ("Closing Rate", closing_rate, proj_closing_rate, forecast_closing_rate, var_closing_pp, "pct"),
-    ("Average Price", avg_price, proj_avg_price, forecast_avg_price, var_avg_price, "money"),
-    ("Qs", qs, proj_qs, forecast_qs, var_qs, "int"),
-    ("Penetration", penetration, proj_penetration, forecast_penetration, var_penetration_pp, "pct"),
-    ("VPG", vpg, proj_vpg, forecast_vpg, var_vpg, "money"),
-    ("Volume", volume, proj_volume, forecast_volume, var_volume, "money"),
-]
-
-st.markdown("### KPI Matrix")
+st.markdown("<div class='section-title'>KPI Matrix</div>", unsafe_allow_html=True)
 st.caption(
     f"Projection based on {legend_date.strftime('%B %d, %Y')} | "
     f"{days_elapsed} days elapsed | {days_remaining} days remaining"
 )
 
-for i, (label, actual_val, proj_val, fcst_val, var_val, kind) in enumerate(rows):
-    cols = st.columns([1.6, 1, 1, 1, 1], gap="small")
+col_widths = [1.25, 0.9, 0.9, 0.9, 0.9]
+render_header(col_widths)
 
-    with cols[0]:
-        kpi_label(label)
-
-    with cols[1]:
-        if label in ["Arrivals", "Contracts Processable", "Closing Rate", "Average Price"]:
-            if label == "Arrivals":
-                arrivals = input_cell("Arrivals", arrivals, step=1, fmt="%d")
-                actual_val = arrivals
-            elif label == "Contracts Processable":
-                contracts = input_cell("Contracts Processable", contracts, step=1, fmt="%d")
-                actual_val = contracts
-            elif label == "Closing Rate":
-                closing_rate = input_cell("Closing Rate", closing_rate, step=0.1, fmt="%.1f")
-                actual_val = closing_rate
-            elif label == "Average Price":
-                avg_price = input_cell("Average Price", avg_price, step=100, fmt="%d")
-                actual_val = avg_price
-
-            # Recalculate actuals/projections if inputs changed
-            qs = contracts / (closing_rate / 100) if closing_rate else 0
-            penetration = (qs / arrivals * 100) if arrivals else 0
-            volume = contracts * avg_price
-            vpg = volume / qs if qs else 0
-
-            proj_arrivals = project_mtd(arrivals)
-            proj_contracts = project_mtd(contracts)
-            proj_qs = project_mtd(qs)
-            proj_volume = project_mtd(volume)
-
-            proj_penetration = (proj_qs / proj_arrivals * 100) if proj_arrivals else 0
-            proj_closing_rate = (proj_contracts / proj_qs * 100) if proj_qs else 0
-            proj_vpg = (proj_volume / proj_qs) if proj_qs else 0
-            proj_avg_price = (proj_volume / proj_contracts) if proj_contracts else 0
-
-            var_arrivals = proj_arrivals - forecast_arrivals
-            var_contracts = proj_contracts - forecast_contracts
-            var_qs = proj_qs - forecast_qs
-            var_volume = proj_volume - forecast_volume
-            var_penetration_pp = proj_penetration - forecast_penetration
-            var_closing_pp = proj_closing_rate - forecast_closing_rate
-            var_vpg = proj_vpg - forecast_vpg
-            var_avg_price = proj_avg_price - forecast_avg_price
-
-        else:
-            value_cell(fmt_int(actual_val) if kind == "int" else fmt_money(actual_val) if kind == "money" else fmt_pct(actual_val))
-
-    with cols[2]:
-        if kind == "int":
-            value_cell(fmt_int(proj_val))
-        elif kind == "money":
-            value_cell(fmt_money(proj_val))
-        else:
-            value_cell(fmt_pct(proj_val))
-
-    with cols[3]:
-        if kind == "int":
-            value_cell(fmt_int(fcst_val))
-        elif kind == "money":
-            value_cell(fmt_money(fcst_val))
-        else:
-            value_cell(fmt_pct(fcst_val))
-
-    with cols[4]:
-        if kind == "pct":
-            value_cell(fmt_pp(var_val))
-        elif kind == "money":
-            value_cell(fmt_money(var_val))
-        else:
-            value_cell(fmt_int(var_val))
+render_row("Arrivals", arrivals, proj_arrivals, forecast_arrivals, var_arrivals, "int", col_widths)
+render_row("Contracts Processable", contracts, proj_contracts, forecast_contracts, var_contracts, "int", col_widths)
+render_row("Closing Rate", closing_rate, proj_closing_rate, forecast_closing_rate, var_closing_pp, "pct", col_widths)
+render_row("Average Price", avg_price, proj_avg_price, forecast_avg_price, var_avg_price, "money", col_widths)
+render_row("Qs", qs, proj_qs, forecast_qs, var_qs, "int", col_widths)
+render_row("Penetration", penetration, proj_penetration, forecast_penetration, var_penetration_pp, "pct", col_widths)
+render_row("VPG", vpg, proj_vpg, forecast_vpg, var_vpg, "money", col_widths)
+render_row("Volume", volume, proj_volume, forecast_volume, var_volume, "money", col_widths)
