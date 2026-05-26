@@ -503,7 +503,7 @@ matrix_rows = [
     ("Volume", volume, proj_volume, forecast_volume, var_volume, "money"),
 ]
 
-    render_matrix(matrix_rows)
+render_matrix(matrix_rows)
 
 st.markdown(html_out, unsafe_allow_html=True)
 
