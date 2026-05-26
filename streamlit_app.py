@@ -16,11 +16,6 @@ st.set_page_config(
 )
 
 # =====================================
-# SIMPLE LOGIN
-# =====================================
-
-
-# =====================================
 # STYLES
 # =====================================
 
@@ -416,6 +411,12 @@ var_avg_price = proj_avg_price - forecast_avg_price
 # =====================================
 # MATRIX
 # =====================================
+
+st.markdown("<div class='section-title'>KPI Matrix</div>", unsafe_allow_html=True)
+st.caption(
+    f"Projection based on {legend_date.strftime('%B %d, %Y')} | "
+    f"{days_elapsed} days elapsed | {days_remaining} days remaining"
+)
 
 def matrix_fmt(kind, value, variance=False):
     if kind == "int":
