@@ -135,7 +135,7 @@ st.markdown(
         font-weight: 700;
         padding-top: 12px;
         line-height: 1.15;
-        min-width: 170px;
+        min-width: 50px;
         color: {COLORS["text"]};
     }}
 
