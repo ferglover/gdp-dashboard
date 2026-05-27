@@ -26,20 +26,17 @@ st.set_page_config(
 # =====================================
 
 def theme_colors():
-    theme_base = (st.get_option("theme.base") or "dark").lower()
-
-    if theme_base == "light":
-        return {
-            "bg": "#f5f7fb",
-            "card_bg": "#e8edf5",
-            "text": "#111827",
-            "muted": "#6b7280",
-            "border": "rgba(17,24,39,0.14)",
-            "header_bg": "#ffffff",
-            "sticky_bg": "#ffffff",
-            "positive": "#15803d",
-            "negative": "#b91c1c",
-        }
+    return {
+        "bg": "#0e1117",
+        "card_bg": "rgba(255,255,255,0.03)",
+        "text": "#f5f7fa",
+        "muted": "rgba(245,247,250,0.70)",
+        "border": "rgba(255,255,255,0.12)",
+        "header_bg": "#0e1117",
+        "sticky_bg": "#0e1117",
+        "positive": "#28a745",
+        "negative": "#dc3545",
+    }
 
     return {
         "bg": "#0e1117",
