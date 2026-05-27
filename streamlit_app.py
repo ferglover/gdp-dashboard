@@ -1,4 +1,3 @@
-import textwrap
 import html
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -20,139 +19,194 @@ st.set_page_config(
 # SIMPLE LOGIN
 # =====================================
 
+USERNAME = "admin"
+PASSWORD = "uvc2026"
 
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("Login")
+
+    user = st.text_input("User")
+    pwd = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if user == USERNAME and pwd == PASSWORD:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Invalid credentials")
+
+    st.stop()
+
+# =====================================
+# THEME HELPERS
+# =====================================
+
+def theme_colors():
+    theme_base = st.get_option("theme.base") or "dark"
+
+    if theme_base == "light":
+        return {
+            "bg": "#ffffff",
+            "card_bg": "#f6f7fb",
+            "text": "#111111",
+            "muted": "#5f6368",
+            "border": "rgba(0,0,0,0.10)",
+            "header_bg": "#ffffff",
+            "positive": "#1f8f3a",
+            "negative": "#c62828",
+        }
+
+    return {
+        "bg": "#0e1117",
+        "card_bg": "rgba(255,255,255,0.03)",
+        "text": "#f5f7fa",
+        "muted": "rgba(245,247,250,0.70)",
+        "border": "rgba(255,255,255,0.12)",
+        "header_bg": "#0e1117",
+        "positive": "#28a745",
+        "negative": "#dc3545",
+    }
+
+COLORS = theme_colors()
 
 # =====================================
 # STYLES
 # =====================================
 
 st.markdown(
-    """
+    f"""
     <style>
-    .block-container {
+    .block-container {{
         padding-top: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
         padding-bottom: 1rem;
-    }
+    }}
 
     /* INPUT EDITABLE */
-    div[data-baseweb="input"] input {
+    div[data-baseweb="input"] input {{
         font-size: 28px !important;
         font-weight: 500 !important;
-    }
+    }}
 
     /* BOTONES + / - */
     button[data-testid="stNumberInputStepUp"],
-    button[data-testid="stNumberInputStepDown"] {
+    button[data-testid="stNumberInputStepDown"] {{
         height: 32px !important;
         width: 32px !important;
-    }
+    }}
 
     /* LABEL DEL INPUT */
-    label[data-testid="stWidgetLabel"] p {
+    label[data-testid="stWidgetLabel"] p {{
         font-size: 14px !important;
         font-weight: 700 !important;
-    }
+    }}
 
-    .section-title {
+    .section-title {{
         font-size: 20px;
         font-weight: 800;
         margin-top: 0.5rem;
         margin-bottom: 0.25rem;
-    }
+    }}
 
-    .matrix-scroll {
+    .matrix-scroll {{
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-    }
+    }}
 
-    .matrix-table {
+    .matrix-table {{
         width: 100%;
         min-width: 980px;
         border-collapse: separate;
         border-spacing: 0 10px;
-    }
+    }}
 
-    .matrix-table thead th {
+    .matrix-table thead th {{
         font-size: 13px;
         font-weight: 800;
         padding: 8px 10px 12px 10px;
         text-align: center;
-        border-bottom: 1px solid rgba(255,255,255,0.12);
+        border-bottom: 1px solid {COLORS["border"]};
         white-space: nowrap;
-        background: #0e1117;
-    }
+        background: {COLORS["header_bg"]};
+        color: {COLORS["text"]};
+    }}
 
     .matrix-table thead th:first-child,
-    .matrix-table tbody td:first-child {
+    .matrix-table tbody td:first-child {{
         position: sticky;
         left: 0;
         z-index: 3;
-        background: #0e1117;
+        background: {COLORS["header_bg"]};
         text-align: left !important;
-    }
+        color: {COLORS["text"]};
+    }}
 
-    .matrix-table thead th:first-child {
+    .matrix-table thead th:first-child {{
         z-index: 4;
-    }
+    }}
 
-    .matrix-kpi-cell {
+    .matrix-kpi-cell {{
         font-size: 14px;
         font-weight: 700;
         padding-top: 12px;
         line-height: 1.15;
         min-width: 170px;
-    }
+        color: {COLORS["text"]};
+    }}
 
-    .matrix-value-card {
-        border: 1px solid rgba(255,255,255,0.12);
+    .matrix-value-card {{
+        border: 1px solid {COLORS["border"]};
         border-radius: 12px;
         padding: 12px 12px 10px 12px;
         min-height: 82px;
-        background: rgba(255,255,255,0.02);
+        background: {COLORS["card_bg"]};
         display: flex;
         align-items: center;
-    }
+    }}
 
-    .matrix-value {
+    .matrix-value {{
         font-size: 22px;
         font-weight: 700;
         line-height: 1.1;
         word-break: break-word;
-    }
+        color: {COLORS["text"]};
+    }}
 
-    .matrix-value.positive {
-        color: #28a745;
-    }
+    .matrix-value.positive {{
+        color: {COLORS["positive"]};
+    }}
 
-    .matrix-value.negative {
-        color: #dc3545;
-    }
+    .matrix-value.negative {{
+        color: {COLORS["negative"]};
+    }}
 
-    .matrix-value.neutral {
-        color: inherit;
-    }
+    .matrix-value.neutral {{
+        color: {COLORS["text"]};
+    }}
 
-    @media (max-width: 768px) {
-        .matrix-table {
+    @media (max-width: 768px) {{
+        .matrix-table {{
             min-width: 860px;
-        }
+        }}
 
-        .matrix-value {
+        .matrix-value {{
             font-size: 18px;
-        }
+        }}
 
-        .matrix-kpi-cell {
+        .matrix-kpi-cell {{
             font-size: 13px;
             min-width: 150px;
-        }
+        }}
 
-        .section-title {
+        .section-title {{
             font-size: 18px;
-        }
-    }
+        }}
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -266,51 +320,34 @@ forecast_row = forecast_filtered.iloc[0]
 # HELPERS
 # =====================================
 
-def theme_colors():
-    theme_base = st.get_option("theme.base") or "dark"
+def input_card(title, value, step, fmt="%d"):
+    with st.container(border=True):
+        st.markdown(f"**{title}**")
+        return st.number_input(
+            title,
+            value=value,
+            step=step,
+            format=fmt,
+            label_visibility="collapsed"
+        )
 
-    if theme_base == "light":
-        return {
-            "bg": "#ffffff",
-            "card_bg": "#f6f7fb",
-            "text": "#111111",
-            "muted": "#5f6368",
-            "border": "rgba(0,0,0,0.10)",
-            "header_bg": "#ffffff",
-            "positive": "#1f8f3a",
-            "negative": "#c62828",
-        }
+def fmt_matrix(kind, value, variance=False):
+    if kind == "int":
+        return f"{value:+,.0f}" if variance else f"{value:,.0f}"
+    if kind == "money":
+        return f"${value:+,.0f}" if variance else f"${value:,.0f}"
+    if kind == "pct":
+        return f"{value:+.2f} pp" if variance else f"{value:.2f}%"
+    return str(value)
 
-    return {
-        "bg": "#0e1117",
-        "card_bg": "rgba(255,255,255,0.03)",
-        "text": "#f5f7fa",
-        "muted": "rgba(245,247,250,0.70)",
-        "border": "rgba(255,255,255,0.12)",
-        "header_bg": "#0e1117",
-        "positive": "#28a745",
-        "negative": "#dc3545",
-    }
-
-
-def value_card(value, tone="neutral", colors=None):
-    colors = colors or theme_colors()
-    tone_color = colors["text"]
-    if tone == "positive":
-        tone_color = colors["positive"]
-    elif tone == "negative":
-        tone_color = colors["negative"]
-
+def value_card(value, tone="neutral"):
     return f"""
-    <div class="matrix-value-card" style="background:{colors['card_bg']}; border-color:{colors['border']};">
-        <div class="matrix-value" style="color:{tone_color};">{html.escape(value)}</div>
+    <div class="matrix-value-card">
+        <div class="matrix-value {tone}">{html.escape(value)}</div>
     </div>
     """
 
-
 def render_matrix(rows):
-    colors = theme_colors()
-
     html_out = f"""
     <html>
     <head>
@@ -319,7 +356,7 @@ def render_matrix(rows):
           margin: 0;
           padding: 0;
           background: transparent;
-          color: {colors["text"]};
+          color: {COLORS["text"]};
           font-family: sans-serif;
         }}
 
@@ -341,10 +378,10 @@ def render_matrix(rows):
             font-weight: 800;
             padding: 8px 10px 12px 10px;
             text-align: center;
-            border-bottom: 1px solid {colors["border"]};
+            border-bottom: 1px solid {COLORS["border"]};
             white-space: nowrap;
-            background: {colors["header_bg"]};
-            color: {colors["text"]};
+            background: {COLORS["header_bg"]};
+            color: {COLORS["text"]};
         }}
 
         .matrix-table thead th:first-child,
@@ -352,9 +389,9 @@ def render_matrix(rows):
             position: sticky;
             left: 0;
             z-index: 3;
-            background: {colors["header_bg"]};
+            background: {COLORS["header_bg"]};
             text-align: left !important;
-            color: {colors["text"]};
+            color: {COLORS["text"]};
         }}
 
         .matrix-table thead th:first-child {{
@@ -367,15 +404,15 @@ def render_matrix(rows):
             padding-top: 12px;
             line-height: 1.15;
             min-width: 170px;
-            color: {colors["text"]};
+            color: {COLORS["text"]};
         }}
 
         .matrix-value-card {{
-            border: 1px solid {colors["border"]};
+            border: 1px solid {COLORS["border"]};
             border-radius: 12px;
             padding: 12px 12px 10px 12px;
             min-height: 82px;
-            background: {colors["card_bg"]};
+            background: {COLORS["card_bg"]};
             display: flex;
             align-items: center;
         }}
@@ -385,26 +422,19 @@ def render_matrix(rows):
             font-weight: 700;
             line-height: 1.1;
             word-break: break-word;
-            color: {colors["text"]};
+            color: {COLORS["text"]};
         }}
 
-        @media (max-width: 768px) {{
-            .matrix-table {{
-                min-width: 860px;
-            }}
+        .matrix-value.positive {{
+            color: {COLORS["positive"]};
+        }}
 
-            .matrix-value {{
-                font-size: 18px;
-            }}
+        .matrix-value.negative {{
+            color: {COLORS["negative"]};
+        }}
 
-            .matrix-kpi-cell {{
-                font-size: 13px;
-                min-width: 150px;
-            }}
-
-            .section-title {{
-                font-size: 18px;
-            }}
+        .matrix-value.neutral {{
+            color: {COLORS["text"]};
         }}
       </style>
     </head>
@@ -435,10 +465,10 @@ def render_matrix(rows):
               <td>
                 <div class="matrix-kpi-cell">{html.escape(label)}</div>
               </td>
-              <td>{value_card(fmt_matrix(kind, actual), colors=colors)}</td>
-              <td>{value_card(fmt_matrix(kind, projected), colors=colors)}</td>
-              <td>{value_card(fmt_matrix(kind, forecast), colors=colors)}</td>
-              <td>{value_card(fmt_matrix(kind, variance, variance=True), tone=tone, colors=colors)}</td>
+              <td>{value_card(fmt_matrix(kind, actual))}</td>
+              <td>{value_card(fmt_matrix(kind, projected))}</td>
+              <td>{value_card(fmt_matrix(kind, forecast))}</td>
+              <td>{value_card(fmt_matrix(kind, variance, variance=True), tone=tone)}</td>
             </tr>
         """
 
@@ -452,6 +482,46 @@ def render_matrix(rows):
 
     height = 140 + (len(rows) * 96)
     st.components.v1.html(html_out, height=height, scrolling=True)
+
+# =====================================
+# ACTUAL INPUTS
+# =====================================
+
+st.markdown("<div class='section-title'>Actuals KPIs</div>", unsafe_allow_html=True)
+
+i1, i2, i3, i4 = st.columns(4, gap="small")
+
+with i1:
+    arrivals = input_card(
+        "Arrivals",
+        int(round(float(row["Arrivals"]))),
+        step=1,
+        fmt="%d"
+    )
+
+with i2:
+    contracts = input_card(
+        "Contracts Processable",
+        int(round(float(row["Contracts Processable"]))),
+        step=1,
+        fmt="%d"
+    )
+
+with i3:
+    closing_rate = input_card(
+        "Closing Rate %",
+        float(row["Closing Rate"]) * 100 if float(row["Closing Rate"]) <= 1 else float(row["Closing Rate"]),
+        step=0.1,
+        fmt="%.1f"
+    )
+
+with i4:
+    avg_price = input_card(
+        "Average Price ($)",
+        int(round(float(row["Average Price"]))),
+        step=100,
+        fmt="%d"
+    )
 
 # =====================================
 # ACTUAL CALCULATIONS
