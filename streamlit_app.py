@@ -26,16 +26,17 @@ st.set_page_config(
 # =====================================
 
 def theme_colors():
-    theme_base = st.get_option("theme.base") or "dark"
+    theme_base = st.get_option("theme.base")
 
     if theme_base == "light":
         return {
             "bg": "#ffffff",
-            "card_bg": "#f6f7fb",
+            "card_bg": "#f7f7f9",
             "text": "#111111",
             "muted": "#5f6368",
-            "border": "rgba(0,0,0,0.10)",
+            "border": "rgba(0,0,0,0.08)",
             "header_bg": "#ffffff",
+            "sticky_bg": "#ffffff",
             "positive": "#1f8f3a",
             "negative": "#c62828",
         }
@@ -47,6 +48,7 @@ def theme_colors():
         "muted": "rgba(245,247,250,0.70)",
         "border": "rgba(255,255,255,0.12)",
         "header_bg": "#0e1117",
+        "sticky_bg": "#0e1117",
         "positive": "#28a745",
         "negative": "#dc3545",
     }
@@ -329,10 +331,12 @@ def value_card(value, tone="neutral"):
     """
 
 def render_matrix(rows):
+
     html_out = f"""
     <html>
     <head>
       <style>
+
         body {{
           margin: 0;
           padding: 0;
@@ -370,7 +374,7 @@ def render_matrix(rows):
             position: sticky;
             left: 0;
             z-index: 3;
-            background: {COLORS["header_bg"]};
+            background: {COLORS["sticky_bg"]};
             text-align: left !important;
             color: {COLORS["text"]};
         }}
@@ -417,11 +421,33 @@ def render_matrix(rows):
         .matrix-value.neutral {{
             color: {COLORS["text"]};
         }}
+
+        @media (max-width: 768px) {{
+
+            .matrix-table {{
+                min-width: 860px;
+            }}
+
+            .matrix-value {{
+                font-size: 18px;
+            }}
+
+            .matrix-kpi-cell {{
+                font-size: 13px;
+                min-width: 150px;
+            }}
+
+        }}
+
       </style>
     </head>
+
     <body>
+
       <div class="matrix-scroll">
+
         <table class="matrix-table">
+
           <thead>
             <tr>
               <th style="text-align:left;">KPI</th>
@@ -431,25 +457,45 @@ def render_matrix(rows):
               <th>Projected vs Forecast</th>
             </tr>
           </thead>
+
           <tbody>
     """
 
     for label, actual, projected, forecast, variance, kind in rows:
+
         tone = "neutral"
+
         if variance > 0:
             tone = "positive"
+
         elif variance < 0:
             tone = "negative"
 
         html_out += f"""
             <tr>
+
               <td>
-                <div class="matrix-kpi-cell">{html.escape(label)}</div>
+                <div class="matrix-kpi-cell">
+                    {html.escape(label)}
+                </div>
               </td>
-              <td>{value_card(fmt_matrix(kind, actual))}</td>
-              <td>{value_card(fmt_matrix(kind, projected))}</td>
-              <td>{value_card(fmt_matrix(kind, forecast))}</td>
-              <td>{value_card(fmt_matrix(kind, variance, variance=True), tone=tone)}</td>
+
+              <td>
+                {value_card(fmt_matrix(kind, actual), tone="neutral")}
+              </td>
+
+              <td>
+                {value_card(fmt_matrix(kind, projected), tone="neutral")}
+              </td>
+
+              <td>
+                {value_card(fmt_matrix(kind, forecast), tone="neutral")}
+              </td>
+
+              <td>
+                {value_card(fmt_matrix(kind, variance, variance=True), tone=tone)}
+              </td>
+
             </tr>
         """
 
@@ -462,7 +508,12 @@ def render_matrix(rows):
     """
 
     height = 140 + (len(rows) * 96)
-    st.components.v1.html(html_out, height=height, scrolling=True)
+
+    st.components.v1.html(
+        html_out,
+        height=height,
+        scrolling=True
+    )
 
 # =====================================
 # ACTUAL INPUTS
