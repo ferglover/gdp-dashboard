@@ -21,7 +21,7 @@ st.set_page_config(
 
 USERS = {
     "admin": "uvc2026",
-    "fernando": "kpi2026"
+    "erick": "kpi2026"
 }
 
 if "authenticated" not in st.session_state:
