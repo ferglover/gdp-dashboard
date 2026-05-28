@@ -359,10 +359,14 @@ def value_card(value, tone="neutral"):
     """
 
 def render_matrix(rows):
+
     html_out = f"""
     <html>
+
     <head>
+
       <style>
+
         body {{
           margin: 0;
           padding: 0;
@@ -374,7 +378,7 @@ def render_matrix(rows):
         .matrix-shell {{
             background: {COLORS["bg"]};
             border-radius: 14px;
-            padding: 8px 0 0 0;
+            padding: 4px 0 0 0;
         }}
 
         .matrix-scroll {{
@@ -383,46 +387,95 @@ def render_matrix(rows):
             -webkit-overflow-scrolling: touch;
         }}
 
+        /* ====================================================
+           TABLE
+        ==================================================== */
+
         .matrix-table {{
             width: 100%;
-            min-width: 760px;
+            min-width: 620px;
             table-layout: fixed;
-            border-collapse: separate;
-            border-spacing: 0 5px;
+            border-collapse: collapse;
         }}
 
+        /* ====================================================
+           COLUMN WIDTHS
+        ==================================================== */
+
         .matrix-table col.kpi-col {{
-            width: 80px;
+            width: 70px;
         }}
 
         .matrix-table col.actual-col {{
-            width: 120px;
+            width: 105px;
         }}
 
-        .matrix-table col.projected-col,
-        .matrix-table col.forecast-col,
-        .matrix-table col.variance-col {{
-            width: auto;
+        .matrix-table col.projected-col {{
+            width: 125px;
         }}
+
+        .matrix-table col.forecast-col {{
+            width: 125px;
+        }}
+
+        .matrix-table col.variance-col {{
+            width: 125px;
+        }}
+
+        /* ====================================================
+           HEADERS
+        ==================================================== */
 
         .matrix-table thead th {{
-            font-size: 14px;
+
+            font-size: 13px;
             font-weight: 700;
-            padding: 0px 4px 8px 4px;
+
+            padding-top: 0px;
+            padding-bottom: 6px;
+            padding-left: 2px;
+            padding-right: 2px;
+
             text-align: center;
+
             border-bottom: 1px solid {COLORS["border"]};
+
             white-space: nowrap;
+
             background: {COLORS["header_bg"]};
             color: {COLORS["text"]};
         }}
 
+        /* ====================================================
+           CELLS
+        ==================================================== */
+
+        .matrix-table tbody td {{
+            padding-top: 2px;
+            padding-bottom: 2px;
+            padding-left: 1px;
+            padding-right: 1px;
+
+            text-align: center;
+        }}
+
+        /* ====================================================
+           STICKY KPI COLUMN
+        ==================================================== */
+
         .matrix-table thead th:first-child,
         .matrix-table tbody td:first-child {{
+
             position: sticky;
+
             left: 0;
+
             z-index: 3;
+
             background: {COLORS["sticky_bg"]};
+
             text-align: left !important;
+
             color: {COLORS["text"]};
         }}
 
@@ -430,45 +483,79 @@ def render_matrix(rows):
             z-index: 4;
         }}
 
-        .matrix-table thead th:nth-child(2),
-        .matrix-table tbody td:nth-child(2) {{
-            padding-left: 0px;
-        }}
+        /* ====================================================
+           KPI LABEL
+        ==================================================== */
 
         .matrix-kpi-cell {{
+
             font-size: 13px;
+
             font-weight: 700;
-            padding-top: 10px;
+
+            padding-top: 6px;
+
             line-height: 1.05;
-            width: 80px;
-            min-width: 80px;
-            max-width: 80px;
+
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+
             overflow: hidden;
+
             white-space: nowrap;
+
             text-overflow: ellipsis;
+
             color: {COLORS["text"]};
         }}
 
+        /* ====================================================
+           VALUE CONTAINER
+        ==================================================== */
+
         .matrix-value-card {{
-            border: 1px solid {COLORS["border"]};
-            border-radius: 10px;
-            padding: 1px 1px;
-            min-height: 48px;
-            background: {COLORS["card_bg"]};
+
+            padding-top: 2px;
+            padding-bottom: 2px;
+            padding-left: 0px;
+            padding-right: 0px;
+
+            min-height: auto;
+
+            background: transparent;
+
+            border: none;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
         }}
 
+        /* ====================================================
+           VALUES
+        ==================================================== */
+
         .matrix-value {{
-            font-size: 15px;
-            font-weight: 400;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
             line-height: 1.05;
+
             word-break: break-word;
+
             color: {COLORS["text"]};
-            padding: 0 2px;
+
             text-align: center;
         }}
+
+        /* ====================================================
+           COLORS
+        ==================================================== */
 
         .matrix-value.positive {{
             color: {COLORS["positive"]};
@@ -482,92 +569,139 @@ def render_matrix(rows):
             color: {COLORS["text"]};
         }}
 
+        /* ====================================================
+           MOBILE
+        ==================================================== */
+
         @media (max-width: 768px) {{
+
             .matrix-table {{
-                min-width: 680px;
-                border-spacing: 0 3px;
+                min-width: 580px;
             }}
 
             .matrix-table thead th {{
-                font-size: 12px;
-                padding: 0px 3px 6px 3px;
+                font-size: 11px;
             }}
 
             .matrix-kpi-cell {{
                 font-size: 12px;
-                width: 80px;
-                min-width: 80px;
-                max-width: 80px;
+
+                width: 65px;
+                min-width: 65px;
+                max-width: 65px;
             }}
 
             .matrix-value {{
-                font-size: 13px;
-            }}
-
-            .matrix-value-card {{
-                min-height: 44px;
-                padding: 5px 6px;
-            }}
-
-            .matrix-shell {{
-                padding-top: 4px;
+                font-size: 12px;
             }}
         }}
+
       </style>
+
     </head>
+
     <body>
+
       <div class="matrix-shell">
+
         <div class="matrix-scroll">
+
           <table class="matrix-table">
+
             <colgroup>
+
               <col class="kpi-col">
+
               <col class="actual-col">
+
               <col class="projected-col">
+
               <col class="forecast-col">
+
               <col class="variance-col">
+
             </colgroup>
+
             <thead>
+
               <tr>
+
                 <th style="text-align:left;">KPI</th>
-                <th>Actuals KPIs</th>
-                <th>Projected KPIs</th>
-                <th>Forecast Targets</th>
-                <th>Projected vs Forecast</th>
+
+                <th>Actuals</th>
+
+                <th>Projected</th>
+
+                <th>Forecast</th>
+
+                <th>Variance</th>
+
               </tr>
+
             </thead>
+
             <tbody>
     """
 
     for label, actual, projected, forecast, variance, kind in rows:
+
         tone = "neutral"
+
         if variance > 0:
             tone = "positive"
+
         elif variance < 0:
             tone = "negative"
 
         html_out += f"""
               <tr>
+
                 <td>
-                  <div class="matrix-kpi-cell">{html.escape(label)}</div>
+                  <div class="matrix-kpi-cell">
+                    {html.escape(label)}
+                  </div>
                 </td>
-                <td>{value_card(fmt_matrix(kind, actual), tone="neutral")}</td>
-                <td>{value_card(fmt_matrix(kind, projected), tone="neutral")}</td>
-                <td>{value_card(fmt_matrix(kind, forecast), tone="neutral")}</td>
-                <td>{value_card(fmt_matrix(kind, variance, variance=True), tone=tone)}</td>
+
+                <td>
+                  {value_card(fmt_matrix(kind, actual), tone="neutral")}
+                </td>
+
+                <td>
+                  {value_card(fmt_matrix(kind, projected), tone="neutral")}
+                </td>
+
+                <td>
+                  {value_card(fmt_matrix(kind, forecast), tone="neutral")}
+                </td>
+
+                <td>
+                  {value_card(fmt_matrix(kind, variance, variance=True), tone=tone)}
+                </td>
+
               </tr>
         """
 
     html_out += """
             </tbody>
+
           </table>
+
         </div>
+
       </div>
+
     </body>
+
     </html>
     """
 
-    height = 140 + (len(rows) * 90)
-    st.components.v1.html(html_out, height=height, scrolling=True)
+    height = 110 + (len(rows) * 42)
+
+    st.components.v1.html(
+        html_out,
+        height=height,
+        scrolling=True
+    )
     
 # =====================================
 # ACTUAL INPUTS
