@@ -19,36 +19,6 @@ st.set_page_config(
 # SIMPLE LOGIN
 # =====================================
 
-USERS = {
-    "admin": "uvc2026",
-    "erick": "kpi2026"
-}
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-if not st.session_state.authenticated:
-
-    st.title("Login")
-
-    user = st.text_input("User")
-    pwd = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-
-        if user in USERS and pwd == USERS[user]:
-
-            st.session_state.authenticated = True
-            st.session_state.username = user
-
-            st.rerun()
-
-        else:
-            st.error("Invalid credentials")
-
-    st.stop()
-
-
 
 # =====================================
 # THEME HELPERS
@@ -377,7 +347,7 @@ def render_matrix(rows):
         .matrix-shell {{
             background: {COLORS["bg"]};
             border-radius: 14px;
-            padding: 4px 0 0 0;
+            padding: 2px 0 0 0;
         }}
 
         .matrix-scroll {{
@@ -393,19 +363,20 @@ def render_matrix(rows):
         .matrix-table {{
             width: 100%;
             min-width: 620px;
-            table-layout: fixed;
+            table-layout: auto;
             border-collapse: collapse;
         }}
 
         /* ====================================================
            COLUMN WIDTHS
         ==================================================== */
-                .matrix-table col.kpi-col {{
-            width: 120px;
+
+        .matrix-table col.kpi-col {{
+            width: 150px;
         }}
 
         .matrix-table col.actual-col {{
-            width: 85px;
+            width: 90px;
         }}
 
         .matrix-table col.projected-col {{
@@ -425,8 +396,10 @@ def render_matrix(rows):
         ==================================================== */
 
         .matrix-table thead th {{
+
             font-size: 13px;
             font-weight: 700;
+
             padding-top: 0px;
             padding-bottom: 4px;
             padding-left: 0px;
@@ -473,6 +446,10 @@ def render_matrix(rows):
             text-align: left !important;
 
             color: {COLORS["text"]};
+
+            width: auto;
+            min-width: 150px;
+            max-width: none;
         }}
 
         .matrix-table thead th:first-child {{
@@ -489,19 +466,21 @@ def render_matrix(rows):
 
             font-weight: 700;
 
-            padding-top: 6px;
+            padding-top: 4px;
 
             line-height: 1.05;
 
-            width: 70px;
-            min-width: 70px;
-            max-width: 70px;
+            width: auto;
 
-            overflow: hidden;
+            min-width: 150px;
+
+            max-width: none;
+
+            overflow: visible;
 
             white-space: nowrap;
 
-            text-overflow: ellipsis;
+            text-overflow: clip;
 
             color: {COLORS["text"]};
         }}
@@ -572,7 +551,7 @@ def render_matrix(rows):
         @media (max-width: 768px) {{
 
             .matrix-table {{
-                min-width: 580px;
+                min-width: 560px;
             }}
 
             .matrix-table thead th {{
@@ -582,9 +561,7 @@ def render_matrix(rows):
             .matrix-kpi-cell {{
                 font-size: 12px;
 
-                width: 65px;
-                min-width: 65px;
-                max-width: 65px;
+                min-width: 120px;
             }}
 
             .matrix-value {{
@@ -691,7 +668,7 @@ def render_matrix(rows):
     </html>
     """
 
-    height = 110 + (len(rows) * 42)
+    height = 100 + (len(rows) * 34)
 
     st.components.v1.html(
         html_out,
