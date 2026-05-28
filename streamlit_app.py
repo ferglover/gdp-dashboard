@@ -402,25 +402,25 @@ def render_matrix(rows):
            COLUMN WIDTHS
         ==================================================== */
 
-        .matrix-table col.kpi-col {{
-            width: 70px;
-        }}
+       .matrix-table col.kpi-col {
+    width: 120px;
+}
 
-        .matrix-table col.actual-col {{
-            width: 105px;
-        }}
+.matrix-table col.actual-col {
+    width: 75px;
+}
 
-        .matrix-table col.projected-col {{
-            width: 125px;
-        }}
+.matrix-table col.projected-col {
+    width: 85px;
+}
 
-        .matrix-table col.forecast-col {{
-            width: 125px;
-        }}
+.matrix-table col.forecast-col {
+    width: 85px;
+}
 
-        .matrix-table col.variance-col {{
-            width: 125px;
-        }}
+.matrix-table col.variance-col {
+    width: 85px;
+}
 
         /* ====================================================
            HEADERS
@@ -451,10 +451,10 @@ def render_matrix(rows):
         ==================================================== */
 
         .matrix-table tbody td {{
-            padding-top: 2px;
-            padding-bottom: 2px;
-            padding-left: 1px;
-            padding-right: 1px;
+            padding-top: 1px;
+            padding-bottom: 1px;
+            padding-left: 0px;
+            padding-right: 0px;
 
             text-align: center;
         }}
@@ -516,8 +516,8 @@ def render_matrix(rows):
 
         .matrix-value-card {{
 
-            padding-top: 2px;
-            padding-bottom: 2px;
+            padding-top: 0px;
+            padding-bottom: 0px;
             padding-left: 0px;
             padding-right: 0px;
 
