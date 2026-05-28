@@ -19,6 +19,35 @@ st.set_page_config(
 # SIMPLE LOGIN
 # =====================================
 
+USERS = {
+    "admin": "uvc2026",
+    "fernando": "kpi2026"
+}
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+
+    st.title("Login")
+
+    user = st.text_input("User")
+    pwd = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+
+        if user in USERS and pwd == USERS[user]:
+
+            st.session_state.authenticated = True
+            st.session_state.username = user
+
+            st.rerun()
+
+        else:
+            st.error("Invalid credentials")
+
+    st.stop()
+
 
 
 # =====================================
